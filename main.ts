@@ -1,3 +1,49 @@
+function signalUpDetected (mgForce: number) {
+    running = false
+    if (mgForce > 0) {
+        radio.sendValue("mgForceR", mgForce)
+    }
+    // 3300ms
+    for (let index = 0; index < 3; index++) {
+        basic.showAnimation(`
+        . . # . . . # # # . # . # . # . . # . . . . # . . . . . . . . . . . .
+        . # # # . # . # . # . . # . . . . # . . . . . . . . . . . . . . # . .
+        # . # . # . . # . . . . # . . . . . . . . . . . . . . # . . . # # # .
+        . . # . . . . # . . . . . . . . . . . . . . # . . . # # # . # . # . #
+        . . # . . . . . . . . . . . . . . # . . . # # # . # . # . # . . # . .
+        `, 150)
+    }
+    basic.showAnimation(`
+        . . # . . . # # # . # . # . # . . # . . . . # . .
+        . # # # . # . # . # . . # . . . . # . . . . . . .
+        # . # . # . . # . . . . # . . . . . . . . . . . .
+        . . # . . . . # . . . . . . . . . . . . . . . . .
+        . . # . . . . . . . . . . . . . . . . . . . . . .
+        `, 150)
+    running = true
+    basic.clearScreen()
+}
+function signalDownDetected () {
+    running = false
+    for (let index = 0; index < 3; index++) {
+        basic.showAnimation(`
+        . . # . . . . . . . . . . . . . . # . . . # # # . # . # . # . . # . .
+        . . # . . . . # . . . . . . . . . . . . . . # . . . # # # . # . # . #
+        # . # . # . . # . . . . # . . . . . . . . . . . . . . # . . . # # # .
+        . # # # . # . # . # . . # . . . . # . . . . . . . . . . . . . . # . .
+        . . # . . . # # # . # . # . # . . # . . . . # . . . . . . . . . . . .
+        `, 140)
+    }
+    basic.showAnimation(`
+        . . # . . . . . . . . . . . . . . . . . . . . . .
+        . . # . . . . # . . . . . . . . . . . . . . . . .
+        # . # . # . . # . . . . # . . . . . . . . . . . .
+        . # # # . # . # . # . . # . . . . # . . . . . . .
+        . . # . . . # # # . # . # . # . . # . . . . # . .
+        `, 140)
+    running = true
+    basic.clearScreen()
+}
 function mgCalibrate () {
     running = false
     mgForceNormal = 0
@@ -16,52 +62,17 @@ function mgCalibrate () {
     running = true
     basic.clearScreen()
 }
-function signalUpDetected(mgForce: number) {
-    running = false
-    if (mgForce > 0) radio.sendValue("mgForceR", mgForce)
-    //3300ms
-    for(let i = 0; i < 3; i++) {
-        basic.showAnimation(`
-        . . # . . . # # # . # . # . # . . # . . . . # . . . . . . . . . . . .
-        . # # # . # . # . # . . # . . . . # . . . . . . . . . . . . . . # . .
-        # . # . # . . # . . . . # . . . . . . . . . . . . . . # . . . # # # .
-        . . # . . . . # . . . . . . . . . . . . . . # . . . # # # . # . # . #
-        . . # . . . . . . . . . . . . . . # . . . # # # . # . # . # . . # . .
-        `, 150)
-    }
-    basic.showAnimation(`
-        . . # . . . # # # . # . # . # . . # . . . . # . .
-        . # # # . # . # . # . . # . . . . # . . . . . . .
-        # . # . # . . # . . . . # . . . . . . . . . . . .
-        . . # . . . . # . . . . . . . . . . . . . . . . .
-        . . # . . . . . . . . . . . . . . . . . . . . . .
-        `, 150)
-    running = true
-    basic.clearScreen()
-}
-function signalDownDetected() {
-    running = false
-    for(let i = 0; i < 3; i++) {
-        basic.showAnimation(`
-        . . # . . . . . . . . . . . . . . # . . . # # # . # . # . # . . # . .
-        . . # . . . . # . . . . . . . . . . . . . . # . . . # # # . # . # . #
-        # . # . # . . # . . . . # . . . . . . . . . . . . . . # . . . # # # .
-        . # # # . # . # . # . . # . . . . # . . . . . . . . . . . . . . # . .
-        . . # . . . # # # . # . # . # . . # . . . . # . . . . . . . . . . . .
-        `, 140)
-    }
-    basic.showAnimation(`
-        . . # . . . . . . . . . . . . . . . . . . . . . .
-        . . # . . . . # . . . . . . . . . . . . . . . . .
-        # . # . # . . # . . . . # . . . . . . . . . . . .
-        . # # # . # . # . # . . # . . . . # . . . . . . .
-        . . # . . . # # # . # . # . # . . # . . . . # . .
-        `, 140)
-    running = true
-    basic.clearScreen()
-}
 
-
+radio.onReceivedValue(function (name, value) {
+    // console.logValue(name, value)
+    // console.logValue(name, value)
+    if (name == "downArr") {
+        signalDownDetected()
+    }
+    if (name == "upArr") {
+        signalUpDetected(0)
+    }
+})
 input.onLogoEvent(TouchButtonEvent.LongPressed, function () {
     mgCalibrate()
 })
@@ -69,14 +80,14 @@ input.onLogoEvent(TouchButtonEvent.Pressed, function () {
     basic.showNumber(mgForceNormal)
 })
 
+let mgForce = 0
+let running = false
+let mgForceNormal = 0
 radio.setGroup(136)
 radio.setTransmitPower(4)
 basic.showIcon(IconNames.Happy)
-let mgForce = 0
-let mgForceNormal = 999
+mgForceNormal = 999
 let mgHysteresis = 25
-let running = false
-
 basic.forever(function () {
     if (running) {
         mgForce = input.magneticForce(Dimension.Strength)
@@ -86,17 +97,3 @@ basic.forever(function () {
     }
     basic.pause(100)
 })
-radio.onReceivedValue(function (name: string, value: number) {
-    //console.logValue(name, value)
-    //console.logValue(name, value)
-    if (name == "downArr")
-    {
-        signalDownDetected()
-    }
-    if (name == "upArr")
-    {
-        signalUpDetected(0)
-    }
-})
-
-
